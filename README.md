@@ -63,4 +63,5 @@ npx playwright-cli close-all
 
 # TODO
 
-**Always use a named session.** Derive a short, descriptive kebab-case name from the user's prompt. This gives each task a persistent browser profile (cookies, localStorage, history) that accumulates across calls.
+- Generate automations/\*yml files from a ticket (JIRA)
+- generate context from Confluence/Figma?

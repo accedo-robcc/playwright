@@ -14,6 +14,7 @@ YAML_FILENAME: $1 Path to filename of the stories to run against. Either a .yml 
 HEADED: detected from $ARGUMENTS — (default: "false" — set to "true" or "headed" for visible browser windows)
 VISION: detected from $ARGUMENTS — if the keyword "vision" appears anywhere in the arguments, enable vision mode (screenshots returned as image responses in the agent's context for richer validation; higher token cost). Default: false.
 OUTPUT_DIR: detected from $ARGUMENTS — extract value after "output-dir=" (default: "tests/generated"). This is where generated .spec.ts files will be written.
+CONTEXT_DIR: detected from $ARGUMENTS — extract value after "context-dir=" (default: "context/"). Root of the shared knowledge base.
 AGENT_TIMEOUT: 300000
 SCREENSHOTS_BASE: "screenshots/bowser-qa"
 RUN_DIR: "{SCREENSHOTS_BASE}/{YYYYMMDD_HHMMSS}\*{short-uuid}" (generated once at start of run)
@@ -68,6 +69,43 @@ export default defineConfig({
 
 2. **Check for `@playwright/test`** in `package.json` devDependencies. If not present, run `npm install --save-dev @playwright/test` before spawning agents.
 
+## Context Scanning
+
+Before spawning agents, scan the `CONTEXT_DIR` directory and build a **context summary** to pass to each agent:
+
+1. **Check if `CONTEXT_DIR` exists.** If it does not, set `CONTEXT_SUMMARY` to empty and skip this section.
+
+2. **Auth & Environments** — check for `CONTEXT_DIR/auth/`:
+   - If `environments.yaml` exists, read it and note the default environment URL.
+   - If `credentials.yaml` exists, read it and note the available user roles (just the role names and emails — do NOT log passwords in the summary).
+
+3. **Business Logic Docs** — check for `CONTEXT_DIR/docs/`:
+   - List all `.md` files by filename. Do NOT read their contents yet — the agent will read relevant ones on demand.
+
+4. **API Specs** — check for `CONTEXT_DIR/api/`:
+   - List all files (`.yaml`, `.json`). Note their filenames.
+
+5. **Design References** — check for `CONTEXT_DIR/designs/`:
+   - List all files. Note filenames.
+
+6. **Build `CONTEXT_SUMMARY`** — a structured block like:
+
+```
+## Available Context (from context/)
+
+**Default environment:** staging → https://staging.example.com
+**Available users:** admin (admin@example.com), viewer (viewer@example.com)
+**Business logic docs:** checkout-flow.md, user-roles.md
+**API specs:** openapi.yaml
+**Design references:** homepage.png, homepage-annotations.md
+```
+
+If the context directory is empty or missing, set:
+```
+## Available Context
+None — no context/ directory found.
+```
+
 ## Instructions
 
 ### Step 1 — Categorize stories
@@ -97,6 +135,8 @@ For NEEDS_CODEGEN stories only, spawn `playwright-codegen-agent` instances:
   - The OUTPUT_DIR path, including the YAML-file-stem subdirectory (e.g., `tests/generated/hackernews/`)
   - The YAML file name (human-readable, for the `test.describe` block label)
   - The HEADED, VISION, and SCREENSHOTS_DIR variables
+  - The `CONTEXT_SUMMARY` block (so the agent knows what context is available)
+  - The `CONTEXT_DIR` path (so the agent can read files on demand)
 - Launch ALL codegen agents in a single message so they run in parallel
 - Be absolutely sure you clearly prompt each agent to have one specific task so all tasks get covered and you get results for every story
 
