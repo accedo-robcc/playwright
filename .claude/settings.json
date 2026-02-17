@@ -6,6 +6,7 @@
       "Bash(npx playwright-cli *)",
       "Bash(playwright-cli *)",
       "Bash(npx playwright test *)",
+      "Bash(npx tsc *)",
       "Bash(npm install *)",
       "Bash(mkdir *)",
       "Bash(ls *)",

@@ -88,7 +88,12 @@ Before spawning agents, scan the `CONTEXT_DIR` directory and build a **context s
 5. **Design References** — check for `CONTEXT_DIR/designs/`:
    - List all files. Note filenames.
 
-6. **Build `CONTEXT_SUMMARY`** — a structured block like:
+6. **Selector Pitfalls** — check for `CONTEXT_DIR/selector-pitfalls.md`:
+   - If it exists, read its full contents and store as `SELECTOR_PITFALLS`.
+   - Add to the context summary: `**Selector pitfalls:** selector-pitfalls.md (injected into each agent prompt)`
+   - If it does not exist, set `SELECTOR_PITFALLS` to empty.
+
+7. **Build `CONTEXT_SUMMARY`** — a structured block like:
 
 ```
 ## Available Context (from context/)
@@ -98,6 +103,7 @@ Before spawning agents, scan the `CONTEXT_DIR` directory and build a **context s
 **Business logic docs:** checkout-flow.md, user-roles.md
 **API specs:** openapi.yaml
 **Design references:** homepage.png, homepage-annotations.md
+**Selector pitfalls:** selector-pitfalls.md (injected into each agent prompt)
 ```
 
 If the context directory is empty or missing, set:
@@ -143,8 +149,24 @@ For NEEDS_CODEGEN stories only, spawn `playwright-codegen-agent` instances:
   - The HEADED, VISION, and SCREENSHOTS_DIR variables
   - The `CONTEXT_SUMMARY` block (so the agent knows what context is available)
   - The `CONTEXT_DIR` path (so the agent can read files on demand)
+  - If `SELECTOR_PITFALLS` is non-empty, include the full contents under a `## Known Selector Pitfalls` section in the agent prompt — agents must treat this as a mandatory checklist when writing selectors
 - Launch ALL codegen agents in a single message so they run in parallel
 - Be absolutely sure you clearly prompt each agent to have one specific task so all tasks get covered and you get results for every story
+
+### Step 4 — Validate generated specs
+
+After all codegen agents complete, collect the paths of any newly generated .spec.ts files (CODEGEN stories where the agent reported PASS + GENERATED).
+
+If there are any newly generated specs, run them all in one command:
+
+```bash
+npx playwright test <path1>.spec.ts <path2>.spec.ts --reporter=list --retries=0 2>&1
+```
+
+Parse the output to determine actual PASS/FAIL per spec file. Update each story's status:
+- Agent reported PASS + spec actually passes → **PASS + GENERATED + VERIFIED**
+- Agent reported PASS + spec fails → **GENERATED — SPEC FAILS** (include the error output in the summary)
+- Agent reported FAIL → **FAIL — NO TEST** (no spec to run)
 
 ### General rules
 
@@ -163,14 +185,26 @@ After all steps complete, provide a unified summary covering both existing specs
 | Story | Mode | Status | Test File |
 | --- | --- | --- | --- |
 | Front page loads with posts | EXISTING SPEC | PASS | tests/generated/hackernews/front-page-loads-with-posts.spec.ts |
-| Navigate to page two and back | CODEGEN | PASS + GENERATED | tests/generated/hackernews/navigate-to-page-two-and-back.spec.ts |
-| View top post comments | CODEGEN | FAIL — NO TEST | — |
+| Navigate to page two and back | CODEGEN | PASS + GENERATED + VERIFIED | tests/generated/hackernews/navigate-to-page-two-and-back.spec.ts |
+| View top post comments | CODEGEN | GENERATED — SPEC FAILS | tests/generated/hackernews/view-top-post-comments.spec.ts |
+| Login flow | CODEGEN | FAIL — NO TEST | — |
 ```
 
-Mode values:
+Status values:
 
-- **EXISTING SPEC** — ran an existing .spec.ts file directly (no agent tokens spent)
-- **CODEGEN** — explored via playwright-codegen-agent, generated .spec.ts on success
+- **EXISTING SPEC / PASS** — ran an existing .spec.ts directly (no agent tokens spent)
+- **CODEGEN / PASS + GENERATED + VERIFIED** — agent explored, generated spec, and `npx playwright test` confirms it passes
+- **CODEGEN / GENERATED — SPEC FAILS** — agent generated a spec but it fails when run; include the Playwright error output below the table
+- **CODEGEN / FAIL — NO TEST** — agent could not complete the story; no spec was generated
+
+If a spec fails validation, include the error immediately below the table:
+
+```
+### Spec failures
+
+**Navigate to page two and back:**
+<paste relevant Playwright error output>
+```
 
 If at least one test file exists (existing or newly generated), also print:
 

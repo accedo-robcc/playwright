@@ -123,6 +123,14 @@ test.describe('<DESCRIBE_LABEL>', () => {
 
 #### 4c. Rules for building the test content
 
+**Avoid known selector pitfalls:**
+If a `## Known Selector Pitfalls` section was provided in your prompt, treat it as a mandatory checklist before writing each selector. Do not generate any pattern listed as problematic — use the suggested fix instead.
+
+The following rules always apply even without a pitfalls file:
+- Use `{ exact: true }` for any `getByRole` selector whose name ends with a digit (e.g., `'Go to slide 1'` → add `exact: true` or it will match `'Go to slide 10'`)
+- Scope nav/header button selectors to their container `testId` when multiple elements on the page could share the same label (e.g., scope `'Home'` to `getByTestId('navigation-menu')`)
+- Never use `getByRole` with a name that is likely a substring of another element's label
+
 **Actions — use the collected selectors verbatim:**
 - Every `Ran Playwright code:` line you captured goes into the test EXACTLY as captured. These are already stable, role-based selectors. Do NOT rewrite them or substitute CSS selectors.
 - Navigation actions from `goto` commands become `await page.goto('<url>');`
