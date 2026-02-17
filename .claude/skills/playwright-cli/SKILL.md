@@ -4,6 +4,21 @@ description: Automates browser interactions for web testing, form filling, scree
 allowed-tools: Bash(playwright-cli:*)
 ---
 
+# Configuration
+
+If a `playwright-cli.json` exists in the working directory, use it automatically. If the user provides a path to a config file, use `--config path/to/config.json`. Otherwise, skip configuration — the env var and CLI defaults are sufficient.
+
+```json
+{
+  "browser": {
+    "browserName": "chromium",
+    "launchOptions": { "headless": true },
+    "contextOptions": { "viewport": { "width": 1440, "height": 900 } }
+  },
+  "outputDir": "./screenshots"
+}
+```
+
 # Browser Automation with playwright-cli
 
 ## Quick start
@@ -156,6 +171,7 @@ playwright-cli video-stop video.webm
 ```
 
 ## Open parameters
+
 ```bash
 # Use specific browser when creating session
 playwright-cli open --browser=chrome
@@ -269,10 +285,10 @@ playwright-cli close
 
 ## Specific tasks
 
-* **Request mocking** [references/request-mocking.md](references/request-mocking.md)
-* **Running Playwright code** [references/running-code.md](references/running-code.md)
-* **Browser session management** [references/session-management.md](references/session-management.md)
-* **Storage state (cookies, localStorage)** [references/storage-state.md](references/storage-state.md)
-* **Test generation** [references/test-generation.md](references/test-generation.md)
-* **Tracing** [references/tracing.md](references/tracing.md)
-* **Video recording** [references/video-recording.md](references/video-recording.md)
+- **Request mocking** [references/request-mocking.md](references/request-mocking.md)
+- **Running Playwright code** [references/running-code.md](references/running-code.md)
+- **Browser session management** [references/session-management.md](references/session-management.md)
+- **Storage state (cookies, localStorage)** [references/storage-state.md](references/storage-state.md)
+- **Test generation** [references/test-generation.md](references/test-generation.md)
+- **Tracing** [references/tracing.md](references/tracing.md)
+- **Video recording** [references/video-recording.md](references/video-recording.md)
