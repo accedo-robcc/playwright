@@ -16,7 +16,7 @@ VISION: detected from $ARGUMENTS — if the keyword "vision" appears anywhere in
 OUTPUT_DIR: detected from $ARGUMENTS — extract value after "output-dir=" (default: "tests/generated"). This is where generated .spec.ts files will be written.
 CONTEXT_DIR: detected from $ARGUMENTS — extract value after "context-dir=" (default: "context/"). Root of the shared knowledge base.
 AGENT_TIMEOUT: 300000
-SCREENSHOTS_BASE: "screenshots/bowser-qa"
+SCREENSHOTS_BASE: "screenshots/"
 RUN_DIR: "{SCREENSHOTS_BASE}/{YYYYMMDD_HHMMSS}\*{short-uuid}" (generated once at start of run)
 
 ## Codebase Structure
@@ -53,17 +53,17 @@ Before spawning agents, perform these checks:
 1. **Check for `playwright.config.ts`** in the project root. If it does NOT exist, create a minimal one:
 
 ```typescript
-import { defineConfig } from '@playwright/test';
+import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
-  testDir: './tests/generated',
+  testDir: "./tests/generated",
   use: {
     baseURL: undefined,
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
+    trace: "on-first-retry",
+    screenshot: "only-on-failure",
   },
   retries: 1,
-  reporter: [['html', { open: 'never' }]],
+  reporter: [["html", { open: "never" }]],
 });
 ```
 
@@ -101,6 +101,7 @@ Before spawning agents, scan the `CONTEXT_DIR` directory and build a **context s
 ```
 
 If the context directory is empty or missing, set:
+
 ```
 ## Available Context
 None — no context/ directory found.
@@ -111,25 +112,30 @@ None — no context/ directory found.
 ### Step 1 — Categorize stories
 
 For each story in the YAML file, check if a .spec.ts file already exists at the expected path:
+
 ```
 OUTPUT_DIR/<yaml-file-stem>/<story-name-slugified>.spec.ts
 ```
 
 Split stories into two groups:
+
 - **HAS_SPEC**: A .spec.ts file already exists — run it directly via `npx playwright test`
 - **NEEDS_CODEGEN**: No .spec.ts file — needs a `playwright-codegen-agent` to explore and generate one
 
 ### Step 2 — Run existing specs
 
 For all HAS_SPEC stories, run them in a single Bash command:
+
 ```bash
 npx playwright test <path1>.spec.ts <path2>.spec.ts ... --reporter=list 2>&1
 ```
+
 Parse the output to determine PASS/FAIL for each spec file. This is fast, cheap, and uses zero agent tokens.
 
 ### Step 3 — Fan out codegen agents for new stories
 
 For NEEDS_CODEGEN stories only, spawn `playwright-codegen-agent` instances:
+
 - Pass each agent the following context:
   - The story name and workflow
   - The OUTPUT_DIR path, including the YAML-file-stem subdirectory (e.g., `tests/generated/hackernews/`)
@@ -162,6 +168,7 @@ After all steps complete, provide a unified summary covering both existing specs
 ```
 
 Mode values:
+
 - **EXISTING SPEC** — ran an existing .spec.ts file directly (no agent tokens spent)
 - **CODEGEN** — explored via playwright-codegen-agent, generated .spec.ts on success
 
