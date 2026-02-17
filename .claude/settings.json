@@ -1,10 +1,19 @@
 {
   "permissions": {
+    "defaultMode": "dontAsk",
     "allow": [
       "Skill(playwright-cli)",
-      "Bash(npx playwright-cli:*)",
-      "Bash(playwright-cli:*)",
-      "Bash(npm install:*)"
+      "Bash(npx playwright-cli *)",
+      "Bash(playwright-cli *)",
+      "Bash(npx playwright test *)",
+      "Bash(npm install *)",
+      "Bash(mkdir *)",
+      "Bash(ls *)",
+      "Bash(tail *)",
+      "Bash(xargs *)",
+      "Write",
+      "Task(playwright-agent)",
+      "Task(playwright-codegen-agent)"
     ]
   }
 }

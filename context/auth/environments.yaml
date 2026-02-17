@@ -2,8 +2,6 @@
 environments:
   local:
     url: http://localhost:3000
-  staging:
-    url: https://staging.example.com
   production:
-    url: https://example.com
-default: staging
+    url: https://hpchannels-prod.apps.ps.accedo.tv/
+default: production
