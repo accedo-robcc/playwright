@@ -1,1 +1,9 @@
-node_modules
+.DS_Store
+
+node_modules/
+/test_results/
+/test-results/
+/tests/coverage-report
+.local-browsers/
+.playwright-cli/
+playwright-report

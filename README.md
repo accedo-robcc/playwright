@@ -5,6 +5,18 @@ nvmrc use
 npm i
 ```
 
+# Commands
+
+## run-automation
+
+Receives a path to a yml file with multiple test cases. Orchestrates specialized agentes for each test case
+
+## generate-tests
+
+Receives a path to a yml file with multiple test cases. Orchestrates specialized agentes for each test case and writes spec files for subsequent runs using playwright directly.
+
+Subsequent runs will check if there is a spec file for a given test case, and will run that instead
+
 # SKILLS
 
 ## playwright-cli

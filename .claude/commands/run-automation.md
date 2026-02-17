@@ -10,12 +10,12 @@ Discover user stories from YAML files, fan out parallel `playwright-agent` insta
 
 ## Variables
 
-YALM*FILENAME: $1 Path to filename of the stories to run against. Either a .yml or .yaml file
+YALM_FILENAME: $1 Path to filename of the stories to run against. Either a .yml or .yaml file
 HEADED: detected from $ARGUMENTS — (default: "false" — set to "true" or "headed" for visible browser windows)
 VISION: detected from $ARGUMENTS — if the keyword "vision" appears anywhere in the arguments, enable vision mode (screenshots returned as image responses in the agent's context for richer validation; higher token cost). Default: false.
 AGENT_TIMEOUT: 300000
 SCREENSHOTS_BASE: "screenshots/bowser-qa"
-RUN_DIR: "{SCREENSHOTS_BASE}/{YYYYMMDD_HHMMSS}*{short-uuid}" (generated once at start of run)
+RUN_DIR: "{SCREENSHOTS_BASE}/{YYYYMMDD_HHMMSS}\*{short-uuid}" (generated once at start of run)
 
 ## Codebase Structure
 
