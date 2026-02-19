@@ -9,6 +9,7 @@
       "Bash(npx tsc *)",
       "Bash(npm install *)",
       "Bash(mkdir *)",
+      "Bash(mkdir -p *)",
       "Bash(ls *)",
       "Bash(tail *)",
       "Bash(xargs *)",

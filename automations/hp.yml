@@ -2,12 +2,14 @@ stories:
   - name: "Home page loads"
     workflow: |
       Navigate to the production url
+      Go through the onboarding flow if it appears
       Verify the front page loads successfully
       Verify at least a carousel is visible
 
   - name: "Navigate to Settings page"
     workflow: |
       Go to the production url
+      Go through the onboarding flow if it appears
       Click on the hamburger menu on the top left corner
       Click on "About" in the submenu
       Verify the "About" page loads successfully
@@ -15,6 +17,7 @@ stories:
   - name: "Navigate to Search page"
     workflow: |
       Go to the production url
+      Go through the onboarding flow if it appears
       Go to the Search page from the top menu
       Verify the Search page loads successfully
       Using Shows by Title, search for "poker"

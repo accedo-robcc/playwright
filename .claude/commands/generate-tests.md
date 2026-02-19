@@ -16,8 +16,7 @@ VISION: detected from $ARGUMENTS — if the keyword "vision" appears anywhere in
 OUTPUT_DIR: detected from $ARGUMENTS — extract value after "output-dir=" (default: "tests/generated"). This is where generated .spec.ts files will be written.
 CONTEXT_DIR: detected from $ARGUMENTS — extract value after "context-dir=" (default: "context/"). Root of the shared knowledge base.
 AGENT_TIMEOUT: 300000
-SCREENSHOTS_BASE: "screenshots/"
-RUN_DIR: "{SCREENSHOTS_BASE}/{YYYYMMDD_HHMMSS}\*{short-uuid}" (generated once at start of run)
+SCREENSHOTS_DIR: computed per story before spawning each agent — see Step 3
 
 ## Codebase Structure
 
@@ -93,7 +92,12 @@ Before spawning agents, scan the `CONTEXT_DIR` directory and build a **context s
    - Add to the context summary: `**Selector pitfalls:** selector-pitfalls.md (injected into each agent prompt)`
    - If it does not exist, set `SELECTOR_PITFALLS` to empty.
 
-7. **Build `CONTEXT_SUMMARY`** — a structured block like:
+7. **App Behavior** — check for `CONTEXT_DIR/docs/app-behavior.md`:
+   - If it exists, read its full contents and store as `APP_BEHAVIOR`.
+   - Add to the context summary: `**App behavior:** app-behavior.md (injected into each agent prompt)`
+   - If it does not exist, set `APP_BEHAVIOR` to empty.
+
+8. **Build `CONTEXT_SUMMARY`** — a structured block like:
 
 ```
 ## Available Context (from context/)
@@ -142,6 +146,16 @@ Parse the output to determine PASS/FAIL for each spec file. This is fast, cheap,
 
 For NEEDS_CODEGEN stories only, spawn `playwright-codegen-agent` instances:
 
+Before launching agents, pre-generate a screenshots directory for each NEEDS_CODEGEN story. Run once per story (replace `<yaml-stem>` and `<story-slug>` with actual slugified values):
+
+```bash
+node -e "require('crypto').randomBytes(4).toString('hex')"
+# outputs e.g. a3f7bc12 — use this as the run ID
+mkdir -p "test_results/<yaml-stem>/<story-slug>_<run-id>/screenshots"
+```
+
+Pass the fully resolved `SCREENSHOTS_DIR` path (e.g. `test_results/hp/home-page-loads_a3f7bc12/screenshots`) as a literal string in each agent prompt — not a variable reference.
+
 - Pass each agent the following context:
   - The story name and workflow
   - The OUTPUT_DIR path, including the YAML-file-stem subdirectory (e.g., `tests/generated/hackernews/`)
@@ -150,6 +164,7 @@ For NEEDS_CODEGEN stories only, spawn `playwright-codegen-agent` instances:
   - The `CONTEXT_SUMMARY` block (so the agent knows what context is available)
   - The `CONTEXT_DIR` path (so the agent can read files on demand)
   - If `SELECTOR_PITFALLS` is non-empty, include the full contents under a `## Known Selector Pitfalls` section in the agent prompt — agents must treat this as a mandatory checklist when writing selectors
+  - If `APP_BEHAVIOR` is non-empty, include the full contents under a `## App Behavior` section in the agent prompt — agents must read this before writing any test code and follow all patterns exactly
 - Launch ALL codegen agents in a single message so they run in parallel
 - Be absolutely sure you clearly prompt each agent to have one specific task so all tasks get covered and you get results for every story
 
@@ -157,16 +172,46 @@ For NEEDS_CODEGEN stories only, spawn `playwright-codegen-agent` instances:
 
 After all codegen agents complete, collect the paths of any newly generated .spec.ts files (CODEGEN stories where the agent reported PASS + GENERATED).
 
+#### Step 4a — Initial validation run
+
 If there are any newly generated specs, run them all in one command:
 
 ```bash
 npx playwright test <path1>.spec.ts <path2>.spec.ts --reporter=list --retries=0 2>&1
 ```
 
-Parse the output to determine actual PASS/FAIL per spec file. Update each story's status:
-- Agent reported PASS + spec actually passes → **PASS + GENERATED + VERIFIED**
-- Agent reported PASS + spec fails → **GENERATED — SPEC FAILS** (include the error output in the summary)
-- Agent reported FAIL → **FAIL — NO TEST** (no spec to run)
+Parse the output to determine actual PASS/FAIL per spec file:
+- Agent reported FAIL → **FAIL — NO TEST** (no spec to run, skip 4b)
+- Spec passes → **PASS + GENERATED + VERIFIED** (done, skip 4b)
+- Spec fails → proceed to Step 4b
+
+#### Step 4b — Self-correction loop (one retry per failing spec)
+
+For each spec that failed Step 4a, spawn a `general-purpose` agent to fix it. Launch all fix agents in parallel if there are multiple failures.
+
+Pass to each fix agent:
+- The full contents of the failing .spec.ts file
+- The exact `npx playwright test` error output for that spec
+- `SELECTOR_PITFALLS` contents (if non-empty), under a `## Known Selector Pitfalls` section
+- `APP_BEHAVIOR` contents (if non-empty), under a `## App Behavior` section
+- The spec file path to overwrite
+
+Instruct the fix agent to:
+1. Identify the root cause from the error output
+2. Cross-check the spec against SELECTOR_PITFALLS and APP_BEHAVIOR — violations there are the most common cause
+3. Edit the spec file in place using the Write tool
+4. Do NOT navigate to the site or use browser tools — fix based on error and context only
+5. Report: what was broken and what was changed
+
+After all fix agents complete, re-run only the previously-failing specs:
+
+```bash
+npx playwright test <path1>.spec.ts ... --reporter=list --retries=0 2>&1
+```
+
+Update each story's final status:
+- Spec now passes → **PASS + GENERATED + VERIFIED (auto-fixed)**
+- Spec still fails → **GENERATED — SPEC FAILS** (include both the original and retry error output)
 
 ### General rules
 
@@ -194,7 +239,8 @@ Status values:
 
 - **EXISTING SPEC / PASS** — ran an existing .spec.ts directly (no agent tokens spent)
 - **CODEGEN / PASS + GENERATED + VERIFIED** — agent explored, generated spec, and `npx playwright test` confirms it passes
-- **CODEGEN / GENERATED — SPEC FAILS** — agent generated a spec but it fails when run; include the Playwright error output below the table
+- **CODEGEN / PASS + GENERATED + VERIFIED (auto-fixed)** — spec failed initial validation, fix agent corrected it, second run passes
+- **CODEGEN / GENERATED — SPEC FAILS** — spec failed both initial validation and the fix attempt; include both error outputs below the table
 - **CODEGEN / FAIL — NO TEST** — agent could not complete the story; no spec was generated
 
 If a spec fails validation, include the error immediately below the table:

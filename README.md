@@ -65,3 +65,4 @@ npx playwright-cli close-all
 
 - Generate automations/\*yml files from a ticket (JIRA)
 - generate context from Confluence/Figma?
+- Session state / auth injection: support `context/auth/session-state.json` (captured via a one-time Playwright `storageState()` script) so auth-gated sites skip login in both agent exploration and generated spec runs. Inject into `playwright.config.ts` and surface to codegen agents via context scanning.
