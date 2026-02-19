@@ -25,6 +25,11 @@ This PoC has 3 test cases, with each sub-agent using ~40k tokens
 
 Rough total: ~130-135k tokens for this full /generate-tests invocation.
 
+# Learnings
+
+- High token usage even with simple steps. This will vary a lot no the app’s complexity, additional context needed and the throughouness of the steps
+- Depending on the app’s DOM, the selectors of the spec files might not be to clear for the agents, which might end up in failed results and retries to correct them
+
 # TODO
 
 - Generate automations/\*yml files from a ticket (JIRA)
