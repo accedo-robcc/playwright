@@ -5,6 +5,12 @@ nvmrc use
 npm i
 ```
 
+then, with claude code
+
+```
+claude /generate-tests automations/hp.yml
+```
+
 This PoC attempts to use playwright-cli + llm to read a yml file describing use-cases in natural language. For each use case, a subagent would run playwright, perform the test and report back.
 
 To reduce token usage, the sub-agent writes a spec file with node + playwright, so that the file is executed instead of going in an exploratory phase.
