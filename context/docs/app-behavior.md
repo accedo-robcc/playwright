@@ -18,44 +18,11 @@ Every fresh browser session (no persisted state) shows a mandatory 5-screen onbo
 4. Shortcuts — click the primary button (`data-testid="button"`)
 5. Start Streaming — click the primary button (`data-testid="button"`)
 
-**Boilerplate to use verbatim in every generated spec:**
-
-```typescript
-import { test, expect, Page } from "@playwright/test";
-
-async function dismissOnboarding(page: Page) {
-  await page.getByTestId("button").click();
-  await page.getByLabel("Go to next onboarding screen").click();
-  await page
-    .getByLabel("Consent to personalized offers")
-    .locator("label")
-    .filter({ hasText: "No" })
-    .click();
-  await page.getByLabel("Confirm data consent and go").click();
-  await page.getByTestId("button").click();
-  await page.getByTestId("button").click();
-}
-```
-
-Call it immediately after `page.goto(...)`, before any other interactions:
-
-```typescript
-await page.goto("https://hpchannels-prod.apps.ps.accedo.tv/");
-await expect(page).toHaveTitle(/HP TV\+/);
-await dismissOnboarding(page);
-```
-
 ---
 
 ## Home page load gate
 
 After `dismissOnboarding()`, the SPA continues loading content asynchronously. Do NOT interact with navigation until the carousel is ready — use the carousel Previous button as the load signal:
-
-```typescript
-await expect(page.getByRole("button", { name: "Previous" })).toBeVisible({
-  timeout: 30000,
-});
-```
 
 This must appear before any click on navigation buttons (hamburger menu, Search, Home, etc.).
 

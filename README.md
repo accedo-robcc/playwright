@@ -5,9 +5,29 @@ nvmrc use
 npm i
 ```
 
+This PoC attempts to use playwright-cli + llm to read a yml file describing use-cases in natural language. For each use case, a subagent would run playwright, perform the test and report back.
+
+To reduce token usage, the sub-agent writes a spec file with node + playwright, so that the file is executed instead of going in an exploratory phase.
+
+To enrich the context of the app, a `/context` folder was added. Ideally each project would fill this with as much information of hte app as needed. This includes credentials, environments, etc.
+
+Both `app-behavior.md` and `selector-pitfalls.md` were generated automatically to mitigate errors/failed tests by the sub-agents
+
+# Token usage
+
+This PoC has 3 test cases, with each sub-agent using ~40k tokens
+
+Rough total: ~130-135k tokens for this full /generate-tests invocation.
+
+# TODO
+
+- Generate automations/\*yml files from a ticket (JIRA)
+- generate context from Confluence/Figma?
+- Session state / auth injection: support `context/auth/session-state.json` (captured via a one-time Playwright `storageState()` script) so auth-gated sites skip login in both agent exploration and generated spec runs. Inject into `playwright.config.ts` and surface to codegen agents via context scanning.
+
 # Commands
 
-## run-automation
+## run-automation (deprecated)
 
 Receives a path to a yml file with multiple test cases. Orchestrates specialized agentes for each test case
 
@@ -17,7 +37,7 @@ Receives a path to a yml file with multiple test cases. Orchestrates specialized
 
 Subsequent runs will check if there is a spec file for a given test case, and will run that instead
 
-# SKILLS
+# Skills
 
 ## playwright-cli
 
@@ -60,9 +80,3 @@ npx playwright-cli close-all
 # References
 
 - [playwright-cli](https://github.com/microsoft/playwright-cli)
-
-# TODO
-
-- Generate automations/\*yml files from a ticket (JIRA)
-- generate context from Confluence/Figma?
-- Session state / auth injection: support `context/auth/session-state.json` (captured via a one-time Playwright `storageState()` script) so auth-gated sites skip login in both agent exploration and generated spec runs. Inject into `playwright.config.ts` and surface to codegen agents via context scanning.
