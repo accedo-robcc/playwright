@@ -19,6 +19,11 @@ To enrich the context of the app, a `/context` folder was added. Ideally each pr
 
 Both `app-behavior.md` and `selector-pitfalls.md` were generated automatically to mitigate errors/failed tests by the sub-agents
 
+# Results
+
+`/tests/generated/hp` — Spec files with the successful steps using `@playwright/test`
+`/test_results/hp` — A folder for each step, with the screenshots per step
+
 # Token usage
 
 This PoC has 3 test cases, with each sub-agent using ~40k tokens
