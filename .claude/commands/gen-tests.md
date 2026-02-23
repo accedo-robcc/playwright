@@ -23,9 +23,7 @@ SCREENSHOTS_DIR: computed per story before spawning each agent — see Step 3
 Example of the structure would look like
 
 ```
-automations/
-├── hackernews.yaml    # Sample HN stories
-└── *.yaml             # Additional story files
+*.yaml             # Additional story files
 
 test_results/
 └── 20260210_143022_a1b2c3/                 # Run directory (datetime + short uuid)
@@ -181,6 +179,7 @@ npx playwright test <path1>.spec.ts <path2>.spec.ts --reporter=list --retries=0 
 ```
 
 Parse the output to determine actual PASS/FAIL per spec file:
+
 - Agent reported FAIL → **FAIL — NO TEST** (no spec to run, skip 4b)
 - Spec passes → **PASS + GENERATED + VERIFIED** (done, skip 4b)
 - Spec fails → proceed to Step 4b
@@ -190,6 +189,7 @@ Parse the output to determine actual PASS/FAIL per spec file:
 For each spec that failed Step 4a, spawn a `general-purpose` agent to fix it. Launch all fix agents in parallel if there are multiple failures.
 
 Pass to each fix agent:
+
 - The full contents of the failing .spec.ts file
 - The exact `npx playwright test` error output for that spec
 - `SELECTOR_PITFALLS` contents (if non-empty), under a `## Known Selector Pitfalls` section
@@ -197,6 +197,7 @@ Pass to each fix agent:
 - The spec file path to overwrite
 
 Instruct the fix agent to:
+
 1. Identify the root cause from the error output
 2. Cross-check the spec against SELECTOR_PITFALLS and APP_BEHAVIOR — violations there are the most common cause
 3. Edit the spec file in place using the Write tool
@@ -210,6 +211,7 @@ npx playwright test <path1>.spec.ts ... --reporter=list --retries=0 2>&1
 ```
 
 Update each story's final status:
+
 - Spec now passes → **PASS + GENERATED + VERIFIED (auto-fixed)**
 - Spec still fails → **GENERATED — SPEC FAILS** (include both the original and retry error output)
 

@@ -14,10 +14,10 @@ npx playwright test tests/generated/           # run all generated specs
 npx playwright test tests/generated/hp/home-page-loads.spec.ts  # run a single spec
 ```
 
-The main entry point is the `/generate-tests` Claude Code command:
+The main entry point is the `/gen-tests` Claude Code command:
 
 ```
-/generate-tests automations/hp.yml
+/gen-tests hp.yml
 ```
 
 ## Architecture
@@ -25,8 +25,8 @@ The main entry point is the `/generate-tests` Claude Code command:
 ### Pipeline flow
 
 ```
-automations/*.yml
-  → /generate-tests command (orchestrator)
+*.yml
+  → /gen-tests command (orchestrator)
       → Context Scanning (context/ dir)
       → Step 1: categorize stories — HAS_SPEC vs NEEDS_CODEGEN
       → Step 2: run existing specs directly via npx playwright test
@@ -40,7 +40,6 @@ automations/*.yml
 ### Key directories
 
 ```
-automations/        # YAML story files (input)
 context/
   auth/             # environments.yaml (URLs), credentials.yaml (users)
   docs/             # app-behavior.md — site-specific patterns injected into every agent
@@ -48,7 +47,7 @@ context/
 tests/generated/    # output .spec.ts files, mirroring YAML file stem
 test_results/       # per-story screenshot directories
 .claude/
-  commands/         # generate-tests.md, run-automation.md
+  commands/         # gen-tests.md, run-automation.md
   agents/           # playwright-codegen-agent.md, playwright-agent.md
   skills/           # playwright-cli skill + reference docs
   settings.json     # permission allow-list for agent tool calls
@@ -57,6 +56,7 @@ test_results/       # per-story screenshot directories
 ### Context injection
 
 Before spawning agents, the orchestrator reads and injects two files directly into every agent prompt:
+
 - `context/selector-pitfalls.md` — patterns that cause strict-mode violations (scoped selectors, `exact: true` for numbered labels)
 - `context/docs/app-behavior.md` — site-specific behavioral facts (onboarding flow boilerplate, load gates, SPA navigation pattern, nav shell selectors)
 

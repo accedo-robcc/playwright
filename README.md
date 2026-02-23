@@ -8,7 +8,7 @@ npm i
 then, with claude code
 
 ```
-claude /generate-tests automations/hp.yml
+claude /gen-tests hp.yml
 ```
 
 This PoC attempts to use playwright-cli + llm to read a yml file describing use-cases in natural language. For each use case, a subagent would run playwright, perform the test and report back.
@@ -28,7 +28,7 @@ Both `app-behavior.md` and `selector-pitfalls.md` were generated automatically t
 
 This PoC has 3 test cases, with each sub-agent using ~40k tokens
 
-Rough total: ~130-135k tokens for this full /generate-tests invocation.
+Rough total: ~130-135k tokens for this full /gen-tests invocation.
 
 # Learnings
 
@@ -37,7 +37,7 @@ Rough total: ~130-135k tokens for this full /generate-tests invocation.
 
 # TODO
 
-- Generate automations/\*yml files from a ticket (JIRA)
+- Generate YAML files from a ticket (JIRA)
 - generate context from Confluence/Figma?
 - Session state / auth injection: support `context/auth/session-state.json` (captured via a one-time Playwright `storageState()` script) so auth-gated sites skip login in both agent exploration and generated spec runs. Inject into `playwright.config.ts` and surface to codegen agents via context scanning.
 
@@ -47,7 +47,7 @@ Rough total: ~130-135k tokens for this full /generate-tests invocation.
 
 Receives a path to a yml file with multiple test cases. Orchestrates specialized agentes for each test case
 
-## generate-tests
+## gen-tests
 
 Receives a path to a yml file with multiple test cases. Orchestrates specialized agentes for each test case and writes spec files for subsequent runs using playwright directly.
 

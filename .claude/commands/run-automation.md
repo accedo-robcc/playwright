@@ -22,9 +22,7 @@ RUN_DIR: "{SCREENSHOTS_BASE}/{YYYYMMDD_HHMMSS}\*{short-uuid}" (generated once at
 Example of the structure would look like
 
 ```
-automations/
-├── hackernews.yaml    # Sample HN stories
-└── *.yaml             # Additional story files
+ *.yaml             # Additional story files
 
 test_results/
 └── 20260210_143022_a1b2c3/                 # Run directory (datetime + short uuid)
