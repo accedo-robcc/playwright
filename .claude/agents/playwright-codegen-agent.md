@@ -30,42 +30,16 @@ Parse the user story into discrete, sequential steps (support all formats: simpl
 
 ### Phase 1.5 — Load Context
 
-If `CONTEXT_SUMMARY` is non-empty, use it to load relevant context before execution. If empty, skip this phase entirely.
-
-#### 1.5a. Resolve environment URL
-
-If the story workflow does NOT already contain an explicit URL (e.g., `http://` or `https://`), read `CONTEXT_DIR/auth/environments.yaml` and use the `default` environment's URL as the base URL for navigation.
-
-#### 1.5b. Resolve credentials
-
-Scan the story workflow for login-related keywords (e.g., "login as **admin**", "sign in as **viewer**", "authenticate as **admin**"). If found, read `CONTEXT_DIR/auth/credentials.yaml` and extract the matching user's email and password. Use these credentials during login steps instead of requiring them inline in the story.
-
-If the story mentions a role name that does not exist in credentials.yaml, log a warning and continue — the step will likely fail with a clear error.
-
-#### 1.5c. Load relevant business logic docs
-
-Scan `CONTEXT_DIR/docs/` filenames for keyword overlap with the story name and workflow text. For example:
-- Story mentions "checkout" → read `checkout-flow.md` if it exists
-- Story mentions "user management" or "roles" → read `user-roles.md` if it exists
-
-Read matching docs and store their content as **business context**. This will be used in Phase 3 to generate richer assertion hints and in Phase 4 to produce stronger assertions.
-
-Do NOT read all docs — only those with filename keywords matching the story. If no docs match, skip this sub-step.
-
-#### 1.5d. Store loaded context
-
-Keep the loaded context (resolved URL, credentials, business logic) in memory for use in later phases. This is internal state, not output.
+If `CONTEXT_SUMMARY` is non-empty:
+- **URL:** No explicit URL in workflow → read `CONTEXT_DIR/auth/environments.yaml`, use `default` env URL.
+- **Credentials:** Story mentions a role name → read `CONTEXT_DIR/auth/credentials.yaml`, extract matching email/password.
+- **Docs:** Scan `CONTEXT_DIR/docs/` filenames for keyword overlap with story text → read matching docs as business context for richer assertions. Do NOT read all docs.
 
 ### Phase 2 — Setup
 
 Derive a named session from the story. The `SCREENSHOTS_DIR` already exists — do not run `mkdir`. If VISION is `true`, prefix all `playwright-cli` commands with `PLAYWRIGHT_MCP_CAPS=vision` for the entire session.
 
-Initialize an internal **codegen log** — a list that will collect entries as you execute steps. Each entry will contain:
-- `stepIndex`: 0-based step number
-- `stepDescription`: the human-readable step text
-- `actions`: list of Playwright code lines collected from playwright-cli output for this step
-- `assertionHints`: what was verified at this step (used to generate `expect(...)` calls)
-- `urlAtStep`: the page URL after the step completed
+Initialize an internal **codegen log** to collect `{ stepIndex, stepDescription, actions[], assertionHints, urlAtStep }` entries per step.
 
 ### Phase 3 — Execute each step sequentially
 
@@ -224,55 +198,6 @@ Return the structured report in the exact format below.
 
 ### Console Errors
 <JS console errors captured at time of failure>
-```
-
-## Examples
-
-The agent accepts user stories in any of these formats:
-
-### Simple sentence
-
-```
-Verify the homepage of http://example.com loads and shows a hero section
-```
-
-### Step-by-step imperative
-
-```
-Login to http://example.com (email: user@test.com, pw: secret123).
-Navigate to /dashboard.
-Verify there are at least 3 widgets.
-Click the first widget.
-Verify the detail page loads.
-```
-
-### Given/When/Then (BDD)
-
-```
-Given I am logged into http://example.com
-When I navigate to /dashboard
-Then I should see a list of widgets with columns: name, status, value
-And each widget should have a numeric value
-```
-
-### Narrative with assertions
-
-```
-As a logged-in user on http://example.com, go to the dashboard.
-Assert: the page title contains "Dashboard".
-Assert: at least 3 widgets are visible.
-Assert: the top widget has a value under 100.
-```
-
-### Checklist
-
-```
-url: http://example.com/dashboard
-auth: user@test.com / secret123
-- [ ] Dashboard loads
-- [ ] At least 3 widgets visible
-- [ ] Values are numeric
-- [ ] Clicking a widget opens detail view
 ```
 
 ## Example: Codegen Log to Test File
