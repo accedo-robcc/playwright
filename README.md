@@ -1,17 +1,19 @@
 # Setup
 
 ```
-nvmrc use
+nvm use
 npm i
 ```
 
-then, with claude code
+Then, with claude code
 
 ```
 claude /gen-tests hp.yml
 ```
 
-This PoC attempts to use playwright-cli + llm to read a yml file describing use-cases in natural language. For each use case, a subagent would run playwright, perform the test and report back.
+After Claude has the test files ready, run `npm test` to validate their output through playwright.
+
+This PoC attempts to use playwright-cli + claude to read a yml file describing use-cases in natural language. For each use case, a subagent would run playwright, perform the test and report back.
 
 To reduce token usage, the sub-agent writes a spec file with node + playwright, so that the file is executed instead of going in an exploratory phase.
 
@@ -19,16 +21,10 @@ To enrich the context of the app, a `/context` folder was added. Ideally each pr
 
 Both `app-behavior.md` and `selector-pitfalls.md` were generated automatically to mitigate errors/failed tests by the sub-agents
 
-# Results
+# Output
 
 `/tests/generated/hp` — Spec files with the successful steps using `@playwright/test`
 `/test_results/hp` — A folder for each step, with the screenshots per step
-
-# Token usage
-
-This PoC has 3 test cases, with each sub-agent using ~40k tokens
-
-Rough total: ~130-135k tokens for this full /gen-tests invocation.
 
 # Learnings
 
@@ -59,7 +55,7 @@ Subsequent runs will check if there is a spec file for a given test case, and wi
 
 This skill was generated during the playwright-cli setup (see its README)
 
-# playwright-cli
+# `playwright-cli`
 
 - [Config schema](https://github.com/microsoft/playwright-cli#configuration-file)
 
