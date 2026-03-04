@@ -96,3 +96,16 @@ npx playwright-cli close-all
 # References
 
 - [playwright-cli](https://github.com/microsoft/playwright-cli)
+
+Current token usage:
+┌─────────────────────────────────────┬─────────┐
+│ Agent │ Tokens │
+├─────────────────────────────────────┼─────────┤
+│ Home page loads (codegen) │ 55,015 │
+├─────────────────────────────────────┼─────────┤
+│ Navigate to Settings page (codegen) │ 58,412 │
+├─────────────────────────────────────┼─────────┤
+│ Navigate to Search page (codegen) │ 51,103 │
+├─────────────────────────────────────┼─────────┤
+│ Subagent total │ 164,530 │
+└─────────────────────────────────────┴─────────┘
